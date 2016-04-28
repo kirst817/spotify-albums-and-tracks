@@ -1,102 +1,108 @@
 // Self envoking function! once the document is ready, bootstrap our application.
 // We do this to make sure that all the HTML is rendered before we do things
 // like attach event listeners and any dom manipulation.
-(function(){
-  $(document).ready(function(){
-    bootstrapSpotifySearch();
-  })
+(function() {
+    $(document).ready(function() {
+        bootstrapSpotifySearch();
+    })
 })();
 
 /**
   This function bootstraps the spotify request functionality.
 */
-function bootstrapSpotifySearch(){
+function bootstrapSpotifySearch() {
 
-  var userInput, searchUrl, results;
-  var outputArea = $("#q-results");
+    var userInput, searchUrl, results;
+    var outputArea = $("#q-results");
 
-  $('#spotify-q-button').on("click", function(){
-      var spotifyQueryRequest;
-      spotifyQueryString = $('#spotify-q').val();
-      searchUrl = "https://api.spotify.com/v1/search?type=artist&q=" + spotifyQueryString;
+    $('#spotify-q-button').on("click", function() {
+        var spotifyQueryRequest;
+        spotifyQueryString = $('#spotify-q').val();
+        searchUrl = "https://api.spotify.com/v1/search?type=artist&q=" + spotifyQueryString;
 
-      // Generate the request object
-      spotifyQueryRequest = $.ajax({
-          type: "GET",
-          dataType: 'json',
-          url: searchUrl
-      });
+        // Generate the request object
+        spotifyQueryRequest = $.ajax({
+            type: "GET",
+            dataType: 'json',
+            url: searchUrl
+        });
 
-      // Attach the callback for success
-      // (We could have used the success callback directly)
-      spotifyQueryRequest.done(function (data) {
-        var artists = data.artists;
+        // Attach the callback for success
+        // (We could have used the success callback directly)
+        spotifyQueryRequest.done(function(data) {
+            var artists = data.artists;
 
-        // Clear the output area
-        outputArea.html('');
+            // Clear the output area
+            outputArea.html('');
 
-        // The spotify API sends back an arrat 'items'
-        // Which contains the first 20 matching elements.
-        // In our case they are artists.
-        artists.items.forEach(function(artist){
-          var artistLi = $("<li>" + artist.name + " - " + artist.id + "</li>")
-          artistLi.attr('data-spotify-id', artist.id);
-          outputArea.append(artistLi);
+            // The spotify API sends back an arrat 'items'
+            // Which contains the first 20 matching elements.
+            // In our case they are artists.
+            artists.items.forEach(function(artist) {
+                var artistLi = $("<li>" + artist.name + " - " + artist.id + "</li>")
+                artistLi.attr('data-spotify-id', artist.id);
+                outputArea.append(artistLi);
 
-          artistLi.click(displayAlbumsAndTracks);
-        })
-      });
+                artistLi.click(displayAlbumsAndTracks);
+            })
+        });
 
-      // Attach the callback for failure
-      // (Again, we could have used the error callback direcetly)
-      spotifyQueryRequest.fail(function (error) {
-        console.log("Something Failed During Spotify Q Request:")
-        console.log(error);
-      });
-  });
+        // Attach the callback for failure
+        // (Again, we could have used the error callback direcetly)
+        spotifyQueryRequest.fail(function(error) {
+            console.log("Something Failed During Spotify Q Request:")
+            console.log(error);
+        });
+    });
 }
 
 /* COMPLETE THIS FUNCTION! */
 function displayAlbumsAndTracks(event) {
-  var appendToMe = $('#albums-and-tracks');
-  var artistId = $(event.target).attr('data-spotify-id');
-  //when links clicked on, return artist id
+    var appendToMe = $('#albums-and-tracks');
+    var artistId = $(event.target).attr('data-spotify-id');
+    //when links clicked on, return artist id
 
-  var spotifyQuery = $.ajax({
-      type: "GET",
-      dataType: 'json',
-      url: "https://api.spotify.com/v1/artists/" + artistId + "/albums"
-      //returns artists id and object
-  });
-  console.log(spotifyQuery);
+            var spotifyQuery = $.ajax({
+              type: "GET",
+              dataType: 'json',
+              url: "https://api.spotify.com/v1/artists/" + artistId + "/albums"
+                  //returns artists id and object
+          });
+            console.log('======spotifyquery======', spotifyQuery);
 
-  spotifyQuery.done(function (data) {
-    var albums = data.items;
-    //album is an array of objects
+              spotifyQuery.done(function(data) {
+              var albums = data.items;
+              //album is an array of objects
 
-        for(var i = 0; i < albums.length; i++){
-    var albumId = albums[i].id;
-          // var albumLi = ("<li>" + albums[i].name + " : " + albums[i].id + "</li>")
+            for (var i = 0; i < albums.length; i++) {
+                var albumId = albums[i].id;
+                // var albumLi = ("<li>" + albums[i].name + " : " + albums[i].id + "</li>")
 
-        console.log(albums[i].name, albums[i].id);
-      // console.log(albumLi);
+                console.log(albums[i].name);
+                // , albums[i].id
+                // console.log(albumLi);
+
+                var spotifyQueryTracks = $.ajax({
+                    type: "GET",
+                    dataType: 'json',
+                    url: "https://api.spotify.com/v1/albums/" + albumId + "/tracks"
+                        //returns artists id and object
+               });
+                    console.log('======spotifyquerytracks======', spotifyQueryTracks);
+
+                    spotifyQueryTracks.done(function(data) {
+                        var tracks = data.items;
+                        //album is an array of objects
 
 
-var spotifyQueryTracks = $.ajax({
-    type: "GET",
-    dataType: 'json',
-    url: "https://api.spotify.com/v1/albums/" + albumId + "/tracks"
-    //returns artists id and object
-});
-console.log(spotifyQueryTracks);
+                        console.log(tracks[i].name);
 
-});
-}
-// + track.name + " - " + track.id +
-  // // These two lines can be deleted. They're mostly for show.
-  // console.log("you clicked on:");
-  // console.log($(event.target).attr('data-spotify-id'));//.attr('data-spotify-id'));
+              });
+          };
+      });
+};
 
-/* YOU MAY WANT TO CREATE HELPER FUNCTIONS OF YOUR OWN */
-/* THEN CALL THEM OR REFERENCE THEM FROM displayAlbumsAndTracks */
-/* THATS PERFECTLY FINE, CREATE AS MANY AS YOU'D LIKE */
+            // + track.name + " - " + track.id +
+            // // These two lines can be deleted. They're mostly for show.
+            // console.log("you clicked on:");
+            // console.log($(event.target).attr('data-spotify-id'));//.attr('data-spotify-id'));
