@@ -16,10 +16,12 @@ function bootstrapSpotifySearch() {
     var outputArea = $("#q-results");
 
     $('#spotify-q-button').on("click", function() {
+      //when search button clicked
         var spotifyQueryRequest;
         spotifyQueryString = $('#spotify-q').val();
+        //save the value in Querystring
         searchUrl = "https://api.spotify.com/v1/search?type=artist&q=" + spotifyQueryString;
-
+        //search url + value
         // Generate the request object
         spotifyQueryRequest = $.ajax({
             type: "GET",
@@ -58,51 +60,54 @@ function bootstrapSpotifySearch() {
 
 /* COMPLETE THIS FUNCTION! */
 function displayAlbumsAndTracks(event) {
-    var appendToMe = $('#albums-and-tracks');
+    var $appendToMe = $('#albums-and-tracks');
     var artistId = $(event.target).attr('data-spotify-id');
-    //when links clicked on, return artist id
+    $("#q-results").html('');
+    $appendToMe.html('');
+    //clear
 
-            var spotifyQuery = $.ajax({
+
+          $.ajax({
               type: "GET",
               dataType: 'json',
-              url: "https://api.spotify.com/v1/artists/" + artistId + "/albums"
-                  //returns artists id and object
-          });
-            console.log('======spotifyquery======', spotifyQuery);
-
-              spotifyQuery.done(function(data) {
+              url: "https://api.spotify.com/v1/artists/" + artistId + "/albums",
+              success: function(data){
               var albums = data.items;
-              //album is an array of objects
 
-            for (var i = 0; i < albums.length; i++) {
-                var albumId = albums[i].id;
-                // var albumLi = ("<li>" + albums[i].name + " : " + albums[i].id + "</li>")
+                for (var i = 0; i < albums.length; i++) {
 
-                console.log(albums[i].name);
-                // , albums[i].id
-                // console.log(albumLi);
+                  var albumName = albums[i].name;
+                  var albumId = albums[i].id;
 
-                var spotifyQueryTracks = $.ajax({
-                    type: "GET",
-                    dataType: 'json',
-                    url: "https://api.spotify.com/v1/albums/" + albumId + "/tracks"
-                        //returns artists id and object
+                      $.ajax({
+                          type: "GET",
+                          dataType: 'json',
+                          url: 'https://api.spotify.com/v1/albums/' + albumId,
+                          success: function(data){
+
+
+                              var releaseDate = data.release_date
+                              var trackInfo = data.tracks.items;
+
+
+                                    var albumList = $("<li><strong>" + albumName + '</strong> - ' + releaseDate + '' + "</li>");
+
+
+                                    for (var i = 0; i < trackInfo.length; i++) {
+
+                                      var trackName  = trackInfo[i].name;
+                                     albumList.append($("<ul><li>" + trackName + "</li></ul>"));
+
+                            }
+
+                            $appendToMe.append(albumList);
+                    }
+
                });
-                    console.log('======spotifyquerytracks======', spotifyQueryTracks);
 
-                    spotifyQueryTracks.done(function(data) {
-                        var tracks = data.items;
-                        //album is an array of objects
+          }
+      }
 
 
-                        console.log(tracks[i].name);
-
-              });
-          };
-      });
+    });
 };
-
-            // + track.name + " - " + track.id +
-            // // These two lines can be deleted. They're mostly for show.
-            // console.log("you clicked on:");
-            // console.log($(event.target).attr('data-spotify-id'));//.attr('data-spotify-id'));
